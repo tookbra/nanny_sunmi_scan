@@ -17,9 +17,15 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((callback){
-      NannySunmiScan.instance.openScanner();
+      _scan();
     });
 
+  }
+
+  Future _scan() async {
+    String barcode = await NannySunmiScan.instance.openScanner();
+    print("==========================");
+    print(barcode);
   }
 
 

@@ -15,11 +15,7 @@ class NannySunmiScan {
   static NannySunmiScan _instance = new NannySunmiScan._();
   static NannySunmiScan get instance => _instance;
 
-  Future<void> openScanner() async {
-    await _channel.invokeMethod("openScanner");
-  }
+  Future<String> openScanner() async => await _channel.invokeMethod("openScanner");
 
-  Future<void> openScannerWithOptions() async {
-    await _channel.invokeMethod("openScannerWithOptions");
-  }
+  Future<String> openScannerWithOptions() async => await _channel.invokeMethod("openScannerWithOptions");
 }
