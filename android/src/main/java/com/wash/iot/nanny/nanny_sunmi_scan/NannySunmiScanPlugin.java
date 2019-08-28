@@ -3,21 +3,32 @@ package com.wash.iot.nanny.nanny_sunmi_scan;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.flutter.plugin.common.PluginRegistry.ActivityResultListener;
 
 /** NannySunmiScanPlugin */
-public class NannySunmiScanPlugin implements MethodCallHandler {
+public class NannySunmiScanPlugin implements MethodCallHandler, ActivityResultListener {
 
-  private static final String TAG = "FlutterPrintPlugin";
+  private static final String TAG = "FlutterScanPlugin";
   private static final String NAMESPACE = "plugins.iot.wash.com/nanny_scan";
   private final Registrar registrar;
   private final MethodChannel channel;
   private Context context;
+
+  private Result result = null;
 
   /** Plugin registration. */
   public static void registerWith(Registrar registrar) {
@@ -29,15 +40,18 @@ public class NannySunmiScanPlugin implements MethodCallHandler {
     this.channel = new MethodChannel(registrar.messenger(), NAMESPACE+"/methods");
     channel.setMethodCallHandler(this);
     this.context = r.context();
+    this.registrar.addActivityResultListener(this);
   }
 
   @Override
   public void onMethodCall(MethodCall call, Result result) {
     switch (call.method) {
       case "openScanner":
+        this.result = result;
         openScanner();
         break;
       case "openScannerWithOptions":
+        this.result = result;
         openScanner();
         break;
       default:
@@ -73,5 +87,28 @@ public class NannySunmiScanPlugin implements MethodCallHandler {
  **/
 
     currentActivity.startActivityForResult(intent, 2345);
+  }
+
+  @Override
+  public boolean onActivityResult(int requestCode, int resultCode, Intent intent) {
+    try {
+      if (requestCode == 2345 && intent != null) {
+        System.out.println("---------------------2");
+        Bundle bundle = intent.getExtras();
+        ArrayList<HashMap<String, String>> result = (ArrayList<HashMap<String, String>>) bundle.getSerializable("data");
+        Iterator<HashMap<String, String>> it = result.iterator();
+        while (it.hasNext()) {
+          Map<String, String> hashMap = it.next();
+          String type = hashMap.get("TYPE");//这个是扫码的类型
+          String value = hashMap.get("VALUE");//这个是扫码
+          this.result.success(value);
+        }
+        return true;
+      }
+      return false;
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      return false;
+    }
   }
 }
